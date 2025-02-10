@@ -1,0 +1,9 @@
+langchain
+langchain-google-genai
+streamlit
+google-api-python-client
+google-auth-httplib2
+google-auth-oauthlib
+python-dotenv
+pandas
+plotly
