@@ -72,11 +72,11 @@ class APIClient:
             request = self.youtube_api.commentThreads().list(
                 part="snippet",
                 videoId=video_id,
-                maxResults=100,  # Max allowed by API
+                maxResults=100, 
                 textFormat="plainText"
             )
             
-            # Keep fetching until no more comments or rate limit
+            
             while request:
                 response = request.execute()
                 for item in response['items']:

@@ -7,7 +7,6 @@ import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 
-# Configuration for prompts
 PROMPTS = {
     'content_subject': """Analyze this educational video's title and description. Focus only on the subject area:
 Title: {title}
@@ -38,7 +37,7 @@ Return ONLY a JSON object in this format (no other text):
 ]}}"""
 }
 
-BATCH_SIZE = 20  # Process comments in batches
+BATCH_SIZE = 20  
 
 class ContentAnalyzer:
     def __init__(self, api_client):
@@ -72,7 +71,7 @@ class ContentAnalyzer:
             if not analysis or 'results' not in analysis:
                 return []
             
-            # Match results with original comments to preserve likes info
+            
             results = []
             for comment, result in zip(comments, analysis['results']):
                 results.append({
@@ -89,12 +88,11 @@ class ContentAnalyzer:
     def analyze_video_content(self, title, description):
         """Analyze video content with separate focused prompts"""
         try:
-            # Get subject information
+            
             subject_prompt = PROMPTS['content_subject'].format(title=title, description=description)
             subject_response = self.api_client.gemini_model.predict(subject_prompt)
             subject_analysis = self.clean_json_response(subject_response) or {"subject": "Unknown", "subtopic": "Unknown"}
 
-            # Get difficulty and prerequisites
             difficulty_prompt = PROMPTS['content_difficulty'].format(title=title, description=description)
             difficulty_response = self.api_client.gemini_model.predict(difficulty_prompt)
             difficulty_analysis = self.clean_json_response(difficulty_response) or {
@@ -103,12 +101,10 @@ class ContentAnalyzer:
                 "prerequisites": []
             }
 
-            # Get concepts
             concepts_prompt = PROMPTS['content_concepts'].format(title=title, description=description)
             concepts_response = self.api_client.gemini_model.predict(concepts_prompt)
             concepts_analysis = self.clean_json_response(concepts_response) or {"concepts": []}
 
-            # Combine all analyses
             return {
                 "subject": str(subject_analysis.get("subject", "Unknown")),
                 "subtopic": str(subject_analysis.get("subtopic", "Unknown")),
@@ -127,10 +123,8 @@ class ContentAnalyzer:
             st.write("No comments available for analysis")
             return {'positive': 0, 'negative': 0}
 
-        # Get top 100 comments sorted by likes
         top_comments = sorted(video_data['comments'], key=lambda x: x['likes'], reverse=True)[:100]
-        
-        # Analyze comments in batches
+  
         all_analyses = []
         sentiments = {'positive': 0, 'negative': 0}
         
@@ -139,21 +133,17 @@ class ContentAnalyzer:
                 batch = top_comments[i:i + BATCH_SIZE]
                 batch_analyses = self.analyze_comment_batch(batch)
                 all_analyses.extend(batch_analyses)
-                
-                # Update sentiment counts (ensuring no neutral)
+              
                 for analysis in batch_analyses:
                     sent = analysis['sentiment']
                     if sent not in ['positive', 'negative']:
                         sent = 'negative'
                     sentiments[sent] += 1
-        
-        # Display sentiment distribution
+      
         st.subheader("Comment Sentiment Analysis")
-        
-        # Create unique key for this video's charts
+
         video_key = "_".join(video_data['title'].lower().split()[:3])
 
-        # Create sentiment distribution chart with formatted numbers
         sentiment_df = pd.DataFrame({
             'Sentiment': ['Positive', 'Negative'],
             'Count': [sentiments['positive'], sentiments['negative']],
@@ -162,8 +152,7 @@ class ContentAnalyzer:
                 f"{(sentiments['negative']/len(all_analyses)*100):.1f}%" if all_analyses else "0%"
             ]
         })
-        
-        # Display using plotly for better formatting
+      
         fig = px.bar(
             sentiment_df,
             x='Sentiment',
@@ -171,12 +160,11 @@ class ContentAnalyzer:
             text='Percentage',
             title=f"Sentiment Distribution - {video_data['title'][:50]}..."
         )
-        
-        # Update layout for better visibility
+ 
         fig.update_traces(
             textposition='outside',
             textfont=dict(size=14),
-            width=0.6,  # Make bars wider
+            width=0.6,  
         )
         fig.update_layout(
             yaxis_title="Number of Comments",
@@ -186,31 +174,28 @@ class ContentAnalyzer:
         
         st.plotly_chart(fig, use_container_width=True, key=f"sentiment_chart_{video_key}")
 
-        # Display top comments with sentiments and likes
         st.subheader("Most Impactful Comments")
-        
-        # Group comments by sentiment and sort by likes
+  
         grouped_comments = {
             'positive': sorted(
                 [c for c in all_analyses if c['sentiment'] == 'positive'],
                 key=lambda x: x['likes'],
                 reverse=True
-            )[:5],  # Show top 5 comments
+            )[:5],  
             'negative': sorted(
                 [c for c in all_analyses if c['sentiment'] == 'negative'],
                 key=lambda x: x['likes'],
                 reverse=True
             )[:5]
         }
-        
-        # Display using tabs
+ 
         tabs = st.tabs(["Most Liked Positive", "Most Liked Negative"])
         
         for tab, (sentiment, comments) in zip(tabs, grouped_comments.items()):
             with tab:
                 if comments:
-                    # Create a unique identifier for this video's comments
-                    video_key = "_".join(video_data['title'].lower().split()[:3])  # Use first 3 words of title
+                   
+                    video_key = "_".join(video_data['title'].lower().split()[:3]) 
                     for i, comment in enumerate(comments, 1):
                         st.markdown(f"**Comment #{i}** ({comment['likes']:,} likes)")
                         st.text_area("", comment['text'], height=100,
