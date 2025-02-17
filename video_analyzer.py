@@ -12,8 +12,12 @@ class VideoAnalyzer:
             if parsed_url.hostname == 'youtu.be':
                 return parsed_url.path[1:]
             if parsed_url.hostname in ('www.youtube.com', 'youtube.com'):
+                
                 if parsed_url.path == '/watch':
                     return parse_qs(parsed_url.query)['v'][0]
+                
+                elif parsed_url.path.startswith('/shorts/'):
+                    return parsed_url.path.split('/shorts/')[1].split('?')[0]
         except Exception:
             return None
         return None

@@ -1,9 +1,11 @@
-langchain
-langchain-google-genai
 streamlit
-google-api-python-client
-google-auth-httplib2
-google-auth-oauthlib
-python-dotenv
 pandas
 plotly
+python-dotenv
+google-api-python-client
+google-generativeai
+youtube_transcript_api
+yt-dlp
+openai-whisper
+ffmpeg-python
+sentence-transformers
